@@ -40,7 +40,15 @@ int main(int argc, char* argv[]){
 			HOG = false;
 	}
 	
-	// Create KCFTracker object
+    printf("_________________\n\n");
+    printf("- KCF Settings --\n");
+    printf("_________________\n");
+    printf("  %-20s: %s\n", "Lab Color Space", LAB? "True" : "False");
+    printf("  %-20s: %s\n", "Use HOG as feature", HOG? "True" : "False");
+    printf("  %-20s: %s\n", "Fixed Window", FIXEDWINDOW? "True" : "False");
+    printf("  %-20s: %s\n", "Multiscale", MULTISCALE? "True" : "False");
+
+    // Create KCFTracker object
 	KCFTracker tracker(HOG, FIXEDWINDOW, MULTISCALE, LAB);
 
 	// Frame readed
@@ -89,6 +97,7 @@ int main(int argc, char* argv[]){
 	float width = max(x1, max(x2, max(x3, x4))) - xMin;
 	float height = max(y1, max(y2, max(y3, y4))) - yMin;
 
+    printf("\n  Reference BBOX -  \n  x0: %8.3f \n  y0: %8.3f \n  w : %8.3f \n  h : %8.3f\n ", xMin, yMin, width, height);
 	
 	// Read Images
 	ifstream listFramesFile;
@@ -114,7 +123,13 @@ int main(int argc, char* argv[]){
 
 		// First frame, give the groundtruth to the tracker
 		if (nFrames == 0) {
+            printf("\n  Input Image info -  w: %5d , h: %5d \n", frame.cols, frame.rows);
+            fflush(stdout);
+
+            // tracker initialization with reference bbox
 			tracker.init( Rect(xMin, yMin, width, height), frame );
+
+            // record bbox to txt output
 			rectangle( frame, Point( xMin, yMin ), Point( xMin+width, yMin+height), Scalar( 0, 255, 255 ), 1, 8 );
 			resultsFile << xMin << "," << yMin << "," << width << "," << height << endl;
 		}

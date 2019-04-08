@@ -160,6 +160,7 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
 // Initialize tracker 
 void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
 {
+    printf("[Info] - tracker initializing . . . \n");
     _roi = roi;
     assert(roi.width >= 0 && roi.height >= 0);
     _tmpl = getFeatures(image, 1);
@@ -341,10 +342,16 @@ cv::Mat KCFTracker::createGaussianPeak(int sizey, int sizex)
 // Obtain sub-window from image, with replication-padding and extract features
 cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scale_adjust)
 {
+    printf("[Info] - getFeatures(image, inithann=%d, scale_adjust=%.3f) \n", inithann, scale_adjust);
+    fflush(stdout);
+
     cv::Rect extracted_roi;
 
     float cx = _roi.x + _roi.width / 2;
     float cy = _roi.y + _roi.height / 2;
+
+    printf("\n  _roi -  \n  x0: %8.3f \n  y0: %8.3f \n  w : %8.3f \n  h : %8.3f \n  cx: %8.3f \n  cy: %8.3f\n",
+           _roi.x, _roi.y, _roi.width, _roi.height, cx, cy);
 
     if (inithann) {
         int padded_w = _roi.width * padding;
@@ -387,12 +394,17 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
         }
     }
 
+    printf("\n  - _tmpl_sz -> width: %d, height: %d\n", _tmpl_sz.width, _tmpl_sz.height);
+
     extracted_roi.width = scale_adjust * _scale * _tmpl_sz.width;
     extracted_roi.height = scale_adjust * _scale * _tmpl_sz.height;
 
     // center roi with new size
     extracted_roi.x = cx - extracted_roi.width / 2;
     extracted_roi.y = cy - extracted_roi.height / 2;
+
+    printf("\n  extracted_roi -  \n  x0: %4d \n  y0: %4d \n  w : %4d \n  h : %4d \n  cx: %8.3f \n  cy: %8.3f\n",
+           extracted_roi.x, extracted_roi.y, extracted_roi.width, extracted_roi.height, cx, cy);
 
     cv::Mat FeaturesMap;  
     cv::Mat z = RectTools::subwindow(image, extracted_roi, cv::BORDER_REPLICATE);
@@ -475,6 +487,9 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
         createHanningMats();
     }
     FeaturesMap = hann.mul(FeaturesMap);
+
+    printf("\n  - FeaturesMap -> rows: %d, cols: %d\n", FeaturesMap.cols, FeaturesMap.rows);
+
     return FeaturesMap;
 }
     
